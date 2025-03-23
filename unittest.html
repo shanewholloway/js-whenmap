@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@phorbas/opaque unittest</title>
+  <link rel="stylesheet" href="https://unpkg.com/mocha@10/mocha.css" />
+  <script src="https://unpkg.com/mocha@10/mocha.js"></script>
+</head><body>
+
+<div id="mocha"></div>
+
+<script type=module>
+  mocha.setup({ui: 'bdd'}).checkLeaks()
+
+  await import('./test/test-whenmap.js')
+  await import('./test/test-whenstream.js')
+  await import('./test/test-whencall.js')
+
+  mocha.run()
+</script>

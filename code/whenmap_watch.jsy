@@ -1,0 +1,17 @@
+export function whenmap_watch(when_tgt, opt={}) ::
+  let { refs, assigns, on_update, signal } = opt
+  return @{}
+    __proto__: null
+    has: key => (_watch(key), when_tgt.has(key))
+    get: key => (_watch(key), when_tgt.get(key))
+    when: key => (_watch(key), when_tgt.when(key))
+    set: (key, value) => (assigns?.add(key), when_tgt.set(key,v))
+    set_when: (key, value) => (assigns?.add(key), when_tgt.set_when(key,v))
+
+  function _watch(key) ::
+    if on_update && !refs?.has(key) ::
+      refs ??= new Set() // lazy init if not present
+      when_tgt.subscribe(key, on_update, signal)
+
+    refs?.add(key)
+

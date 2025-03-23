@@ -1,0 +1,51 @@
+{
+  "name": "whenmap",
+  "version": "0.0.1",
+  "description": "",
+  "license": "BSD-2-Clause",
+  "author": "Shane Holloway <shane.holloway@ieee.org>",
+  "homepage": "https://github.com/shanewholloway/js-whenmap#readme",
+  "bugs": {
+    "url": "https://github.com/shanewholloway/js-whenmap/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/shanewholloway/js-whenmap.git"
+  },
+  "files": [
+    "esm/"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./esm/index.js",
+    "./esm": "./esm"
+  },
+  "imports": {
+    "#test_bdd": {
+      "node": "./test/node_bdd.js",
+      "web": "./test/web_bdd_mocha.js"
+    }
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "chai": "^5.2.0",
+    "rollup": "^4.36.0",
+    "rollup-plugin-jsy": "^1.9.2"
+  },
+  "optionalDependencies": {
+    "vite": "^6.2.2"
+  },
+  "scripts": {
+    "clean": "rm ./esm/* || true",
+    "build": "rollup --config",
+    "watch": "rollup --config --watch",
+    "pretest": "test -f esm/hashbelt.js || npm -s run build",
+    "vite": "vite",
+    "serve": "vite",
+    "test": "npm -s run test:one",
+    "test:one": "cd test && node --test",
+    "test:watch": "cd test && node --test --watch",
+    "test:only": "cd test && node --test --test-only --watch",
+    "prepublishOnly": "npm run clean && npm run test"
+  }
+}
