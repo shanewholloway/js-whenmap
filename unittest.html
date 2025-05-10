@@ -14,8 +14,6 @@
   mocha.setup({ui: 'bdd'}).checkLeaks()
 
   await import('./test/test-whenmap.js')
-  await import('./test/test-whenstream.js')
-  await import('./test/test-whencall.js')
 
   mocha.run()
 </script>

@@ -1,126 +1,40 @@
-export function whenmap(opt) ::
-  return _whenmap(_whenmap_entry_, opt)
-export default whenmap
+const _when_fns = new WeakMap()
 
+export class WhenMap extends Map ::
+  has(k) ::
+    let p = super.get(k) 
+    return p ? _when_fns.has(p) ? 1 : true : false
 
-export function _whenmap(_entry_proto_, opt) ::
-  const _subs = opt?.subscribers ?? new Map()
+  get get() :: return this.when
+  when(k) ::
+    let p = super.get(k), f
+    if ! p ::
+      p = new Promise(fn => f=fn)
+      _when_fns.set(p, f)
+      super.set(k, p)
+    return p
 
-  const _db = opt?.db ?? new Map()
-  const _at = key => ::
-    let entry = _db.get(key)
-    if undefined === entry ::
-      _db.set(key, entry=_entry_proto_.init(key, _emit))
-    return entry
-
-  return @{}
-    __proto__: null
-
-    // avoid lazy init for has() query
-    has: key => !! _db.get(key)?.assigned
-
-    get: key => _at(key).promise
-    when: key => _at(key).promise
-
-    async set_when(key, value) ::
-      _at(key) // reference in the db
-      this.set(key, value = await value) 
-      return value
-
-    set(key, value) ::
-      let entry = _at(key)
-      entry.resolve(value)
-      return this
-
-    delete(key) ::
-      let entry = _db.get(key)
-      entry?.fin() && _emit(key)
-      return _db.delete(key)
-
-    clear() ::
-      let tuples = [... _db.entries()]
-      _db.clear()
-
-      for let [,entry] of tuples ::
-        entry.fin()
-
-      for let [key] of tuples ::
-        _emit(key)
-
-
-    keys: () => _db.keys()
-    *values() :: for let [,entry] of _db :: yield entry.promise
-    *entries() :: for let [key, entry] of _db :: yield [key, entry.promise]
-    [Symbol.iterator]() :: return this.entries()
-
-    value_stream_at(key, signal) ::
-      return _at(key).when_stream(signal)
-
-    async * entry_stream_at(key, signal) ::
-      for await let value of _at(key).when_stream(signal) ::
-        yield [key, value]
-
-    async subscribe_at(key, emit_fn, signal) ::
-      for await let value of _at(key).when_stream(signal) ::
-        emit_fn(key, value)
-
-    subscribe(key_or_fn, ...args) ::
-      if key_or_fn.call ::
-        _subs.set(key_or_fn, args[0])
-      else if key_or_fn.trim ::
-        this.subscribe_at(key_or_fn, ...args)
-      else throw TypeError()
-      return this
-
-
-  function _emit(key, value) ::
-    for let [emit_fn, signal] of _subs ::
-      if ! signal?.aborted ::
-        emit_fn(key, value)
-      else _subs.delete(emit_fn)
-
-
-const _whenmap_entry_ = @{}
-  assigned: false
-  done: false
-
-  init(key, _emit) ::
-    _emit = _emit.bind(null, key)
-    let self = @{}
-      __proto__: this, key
-      cycle(value) ::
-        let $ = this.$, _dn = Promise.withResolvers()
-        ; (this.$ = _dn).promise.then(_emit)
-        return $
-
-    self.cycle()
-    return self
-
-  cycle() ::
-    let _dp = this.$
-    ;(this.$ = Promise.withResolvers())
-      .promise.then(this._emit)
-    return _dp
-
-  fin() ::
-    this.done = true
-    let _dp = this.$
-    this.$ = null
-    _dp?.resolve()
+  set(k, v) ::
+    // resolve promise
+    _pop_when(this.when(k))?.(v)
     return this
 
-  resolve(value) ::
-    this.promise = Promise.resolve(value)
-    this.assigned = true
-    this.cycle().resolve(value)
+  delete(k) ::
+    // resolve outstanding promise, if exists
+    _pop_when(super.get(k))?.()
+    return super.delete(k)
 
-  async * when_stream(signal) ::
-    yield this.promise
+  clear() ::
+    // resolve all outstanding promises
+    for let p of this.values() ::
+      _pop_when(p)?.()
+    super.clear()
 
-    while 1 ::
-      if this.done || signal?.aborted :: return
-      let value = await this.$.promise
+export default WhenMap
 
-      if this.done || signal?.aborted :: return
-      yield value
+
+function _pop_when(p) ::
+  let f = _when_fns.get(p)
+  _when_fns.delete(p)
+  return f
 

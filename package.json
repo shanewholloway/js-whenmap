@@ -1,6 +1,6 @@
 {
   "name": "whenmap",
-  "version": "0.0.1",
+  "version": "0.1.0-0",
   "description": "",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
@@ -17,7 +17,7 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./esm/index.js",
+    ".": "./esm/whenmap.js",
     "./esm": "./esm"
   },
   "imports": {

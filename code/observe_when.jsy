@@ -1,3 +1,0 @@
-export * from './whenmap_watch.jsy'
-export * from './whenstream.jsy'
-export * from './whencall.jsy'

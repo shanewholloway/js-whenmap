@@ -3,10 +3,7 @@ import rpi_terser from '@rollup/plugin-terser'
 
 export default {
   input: [
-    'code/index.jsy',
     'code/whenmap.jsy',
-    'code/whenmap_proxy.jsy',
-    'code/observe_when.jsy',
   ],
   output: [
     { format: 'es', dir: 'esm/', sourcemap: true },

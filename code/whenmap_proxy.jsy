@@ -1,9 +1,0 @@
-export const _whenmap_pxy_ = @{}
-  has: (map_db, key) => key !== 'then' ? map_db.has(key) : null
-  get: (map_db, key) => key !== 'then' ? map_db.when(key) : null
-  set: (map_db, key, value) => key !== 'then' ? map_db.set_when(key, value) : null
-
-export const as_whenmap_proxy = when_db =>
- new Proxy(when_db, _whenmap_pxy_)
-
-export default as_whenmap_proxy
