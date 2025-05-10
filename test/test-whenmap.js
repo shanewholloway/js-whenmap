@@ -82,6 +82,22 @@ describe('whenmap', () => {
     expect(await p).to.equal(v)
   })
 
+  it('when() identity', async () => {
+    let when_db = new WhenMap()
+    let p0 = when_db.when('test_item')
+    let p1 = when_db.when('test_item')
+    let p2 = when_db.get('test_item')
+
+    when_db.set('test_item', 2142)
+    let p3 = when_db.when('test_item')
+    let p4 = when_db.get('test_item')
+
+    expect(p0 === p1).to.be.true
+    expect(p0 === p2).to.be.true
+    expect(p0 === p3).to.be.true
+    expect(p0 === p4).to.be.true
+  })
+
   it('delete returns false for untracked keys', () => {
     let when_db = new WhenMap()
 

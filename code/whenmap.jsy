@@ -1,28 +1,28 @@
 const _when_fns = new WeakMap()
 
 export class WhenMap extends Map ::
-  has(k) ::
-    let p = super.get(k) 
+  has(key) ::
+    let p = super.get(key)
     return p ? _when_fns.has(p) ? 1 : true : false
 
   get get() :: return this.when
-  when(k) ::
-    let p = super.get(k), f
+  when(key) ::
+    let p = super.get(key), f
     if ! p ::
       p = new Promise(fn => f=fn)
       _when_fns.set(p, f)
-      super.set(k, p)
+      super.set(key, p)
     return p
 
-  set(k, v) ::
+  set(key, val) ::
     // resolve promise
-    _pop_when(this.when(k))?.(v)
+    _pop_when(this.when(key))?.(val)
     return this
 
-  delete(k) ::
+  delete(key) ::
     // resolve outstanding promise, if exists
-    _pop_when(super.get(k))?.()
-    return super.delete(k)
+    _pop_when(super.get(key))?.()
+    return super.delete(key)
 
   clear() ::
     // resolve all outstanding promises
