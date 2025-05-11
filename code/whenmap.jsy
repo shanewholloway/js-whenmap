@@ -1,6 +1,10 @@
 const _when_fns = new WeakMap()
+const _as_when_tuples = ([k,v]) => [k, Promise.resolve(v)]
 
 export class WhenMap extends Map ::
+  constructor(entries) ::
+    super @ entries &&= Array.from(entries, _as_when_tuples)
+
   has(key) ::
     let p = super.get(key)
     return p ? _when_fns.has(p) ? 1 : true : false
@@ -12,6 +16,7 @@ export class WhenMap extends Map ::
       p = new Promise(fn => f=fn)
       _when_fns.set(p, f)
       super.set(key, p)
+      this.on_ref?.(key, p)
     return p
 
   set(key, val) ::

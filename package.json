@@ -39,7 +39,7 @@
     "clean": "rm ./esm/* || true",
     "build": "rollup --config",
     "watch": "rollup --config --watch",
-    "pretest": "test -f esm/hashbelt.js || npm -s run build",
+    "pretest": "test -f esm/whenmap.js || npm -s run build",
     "vite": "vite",
     "serve": "vite",
     "test": "npm -s run test:one",
