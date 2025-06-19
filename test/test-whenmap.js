@@ -3,7 +3,7 @@ import {expect} from 'chai'
 
 import {WhenMap} from 'whenmap'
 
-describe('whenmap', () => {
+describe('WhenMap', () => {
   it('shape', () => {
     expect(WhenMap).to.be.a('function')
 

@@ -1,0 +1,61 @@
+export class WhenAiter ::
+  static from(arg, opt) ::
+    return new this(opt).when(arg)
+
+  when(arg) ::
+    if arg.call ::
+      arg(this.send, opt, this)
+    else this.when_all(arg)
+    return this
+
+  async when_all(iterable) ::
+    let l = [], send = this.send
+    for let e of iterable ::
+      if e?.then ::
+        l.push(e.then(send))
+      else send(e)
+
+    while l.length ::
+      await l.pop()
+
+    this.return()
+    return this
+
+
+  [Symbol.asyncIterator]() :: return this
+  throw() :: this.return()
+
+  constructor(opt) ::
+    let q=[], p, stop=false
+
+    Object.assign @ this, @{}
+      async send(v) ::
+        v = await v
+        if ! stop ::
+          q.push(v)
+          p?.resolve()
+          p = null
+        return v
+
+      return() ::
+        stop = true
+        p?.resolve()
+        p = null
+
+      async next() ::
+        while 1 ::
+          if q.length ::
+            return {value: q.shift(), done: false}
+
+          if stop ::
+            return { done: true }
+
+          p ??= Promise.withResolvers()
+          await p.promise
+           
+    let signal = opt?.signal
+    if signal ::
+      if signal.aborted :: stop = true
+      else signal.addEventListener('abort', this.return)
+    return this
+

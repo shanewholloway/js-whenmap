@@ -17,7 +17,7 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./esm/whenmap.js",
+    ".": "./esm/index.js",
     "./esm": "./esm"
   },
   "imports": {
