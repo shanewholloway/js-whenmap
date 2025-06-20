@@ -1,6 +1,6 @@
 {
   "name": "whenmap",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
@@ -29,11 +29,11 @@
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "chai": "^5.2.0",
-    "rollup": "^4.36.0",
-    "rollup-plugin-jsy": "^1.9.2"
+    "rollup": "^4.44.0",
+    "rollup-plugin-jsy": "^1.9.4"
   },
   "optionalDependencies": {
-    "vite": "^6.2.2"
+    "vite": "^6.3.5"
   },
   "scripts": {
     "clean": "rm ./esm/* || true",
