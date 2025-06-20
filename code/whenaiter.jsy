@@ -1,61 +1,73 @@
+
 export class WhenAiter ::
-  static from(arg, opt) ::
-    return new this(opt).when(arg)
+  static from(init_arg, opt) ::
+    return new this(init_arg, opt)
 
-  when(arg) ::
-    if arg.call ::
-      arg(this.send, opt, this)
-    else this.when_all(arg)
-    return this
-
-  async when_all(iterable) ::
-    let l = [], send = this.send
-    for let e of iterable ::
-      if e?.then ::
-        l.push(e.then(send))
-      else send(e)
-
-    while l.length ::
-      await l.pop()
-
-    this.return()
-    return this
+  constructor(init_arg, opt) ::
+    let [send, recv_self] = aiter_pipe(opt, this)
+    if init_arg?.[Symbol.iterator] ::
+      _send_all(init_arg, send, recv_self)
+    else init_arg?.(send)
+    return recv_self
 
 
-  [Symbol.asyncIterator]() :: return this
-  throw() :: this.return()
 
-  constructor(opt) ::
-    let q=[], p, stop=false
+export function aiter_pipe(opt, recv_self) ::
+  const q=[], max_size = opt?.max_size ?? 5
+  let abrt = new AbortController()
+  let p_underflow, p_overflow
 
-    Object.assign @ this, @{}
-      async send(v) ::
-        v = await v
-        if ! stop ::
-          q.push(v)
-          p?.resolve()
-          p = null
-        return v
+  // Sender function closure
+  function send(v) ::
+    if v?.then ::
+      return v.then(send, opt?.on_error)
 
-      return() ::
-        stop = true
-        p?.resolve()
-        p = null
+    q.push(v)
+    p_underflow = void p_underflow?.resolve()
 
-      async next() ::
-        while 1 ::
-          if q.length ::
-            return {value: q.shift(), done: false}
+  send.signal = abrt.signal
+  send.ready = Promise.resolve(true)
+  send.stop = async () => ::
+    abrt = void abrt?.abort()
+    p_underflow = void p_underflow?.resolve()
+    return { done: true }
 
-          if stop ::
-            return { done: true }
 
-          p ??= Promise.withResolvers()
-          await p.promise
-           
-    let signal = opt?.signal
-    if signal ::
-      if signal.aborted :: stop = true
-      else signal.addEventListener('abort', this.return)
-    return this
+  // Async Iterable Receiver
+  recv_self = @{}
+    __proto__: recv_self
+    get size() :: return q.length
+    signal: abrt.signal
+
+    [Symbol.asyncIterator]() :: return this
+    return: send.stop, throw: send.stop,
+    async next() ::
+      while 1 ::
+        if q.length ::
+          return { value: q.shift(), done: false }
+
+        if undefined === abrt ::
+          return { done: true }
+        else if q.length < max_size ::
+          p_overflow = void p_overflow?.resolve(true)
+        else if ! p_overflow ::
+          send.ready = (p_overflow = Promise.withResolvers()).promise
+
+        await (p_underflow ??= Promise.withResolvers()).promise
+
+
+  return [send, recv_self]
+
+
+async function _send_all(iterable, send, aiter) ::
+  let l=[]
+  for let v of iterable ::
+    v = send(v)
+    if v :: l.push(v)
+
+  // join on all promises
+  while l.length :: await l.pop()
+
+  // mark complete
+  await aiter.return()
 
